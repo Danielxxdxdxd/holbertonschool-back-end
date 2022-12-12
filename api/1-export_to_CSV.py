@@ -1,21 +1,24 @@
 #!/usr/bin/python3
-"""Write a Python script that, using this REST"""
-import csv
-from requests import get
+"""Script to generete request using a given APIs"""
+import requests
 from sys import argv
 
-#  print('HTTP header: ', response.headers)
-#  print('URL: ', response.url)
-#  print('Status code: ', response.status_code)
 
-if __name__ == "__main__":
-    url = 'https://jsonplaceholder.typicode.com/'
-    id_user = argv[1]
-    users = get('{}users/{}'.format(url, id_user)).json()
-    username = users.get('username')
-    tasks = get('{}todos?userId={}'.format(url, id_user)).json()
-    with open('{}.csv'.format(id_user), 'wt') as file:
-        write_file = csv.writer(file, quoting=csv.QUOTE_ALL)
-        for task in tasks:
-            write_file.writerow([int(id_user), username,
-                                task.get('completed'), task.get('title')])
+if __name__ == '__main__':
+    """Script for task0"""
+    user_request = requests.get(
+        'http://jsonplaceholder.typicode.com/users/{}'.format(argv[1])).json()
+    todos_req = requests.get(
+        'http://jsonplaceholder.typicode.com/todos').json()
+    csvs = ""
+    name = str(user_request.get('username'))
+    uid = argv[1]
+    for task in todos_req:
+        if task.get('userId') == int(argv[1]):
+            csvs += ("\"{}\",\"{}\",\"{}\",\"{}\"\n"
+                     .format(uid,
+                             name,
+                             task.get('completed'),
+                             task.get('title')))
+    with open(("{}.csv").format(uid), "w", encoding="utf-8") as f:
+        f.write(csvs)Gather data from an API
