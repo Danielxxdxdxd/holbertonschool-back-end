@@ -1,26 +1,40 @@
 #!/usr/bin/python3
-"""Script to generete request using a given APIs"""
+"""
+This module start the conecction with API jsonplace
+"""
 import requests
 from sys import argv
 
 
-if __name__ == '__main__':
-    """Script for task0"""
-    user_request = requests.get(
-        'http://jsonplaceholder.typicode.com/users/{}'.format(argv[1])).json()
-    todos_req = requests.get(
-        'http://jsonplaceholder.typicode.com/todos').json()
-    usr_todos_list = [x for x in todos_req if x.get(
-        'userId') == int(argv[1])]
-    # (x) Elemento dentro de los elementos de todos_request solamente si
-    user_completed_list = [
-        x for x in usr_todos_list if x.get('completed') is True]
-    # Recorremos la lista de todos nuevamente para filtrar tareas completadas
+def gather():
+    """
+    This methos return the tasks of the users
+    """
 
-    print("Employee {} is done with tasks({}/{}):"
-          .format(
-              user_request.get('name'),
-              len(user_completed_list),
-              len(usr_todos_list)))
-    for task in user_completed_list:
-        print("\t " + task.get('title'))
+    url_all = "https://jsonplaceholder.typicode.com/todos?"
+    url_user = "https://jsonplaceholder.typicode.com/users?"
+    argv_all = {'userId': argv[1]}
+    argv_user = {'id': argv[1]}
+
+    response_all = requests.get(url_all, params=argv_all)
+    response_user = requests.get(url_user, params=argv_user)
+
+    all_json = response_all.json()
+    user_json = response_user.json()
+    comp, task = 0, 0
+    list_task = []
+
+    for dates in all_json:
+        task += 1
+        if dates['completed']:
+            comp += 1
+            list_task.append(dates['title'])
+
+    name = user_json[0]['name']
+    print("Employee {} is done with tasks({}/{}):".format(name, comp, task))
+    for task in list_task:
+        print("\t " + task)
+
+
+if __name__ == '__main__':
+    gather()
