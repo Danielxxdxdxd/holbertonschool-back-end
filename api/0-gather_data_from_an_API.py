@@ -1,40 +1,38 @@
 #!/usr/bin/python3
-"""
-This module start the conecction with API jsonplace
-"""
-import requests
+"""Return the infor for employee
+whose ID is passed in the script"""
+from requests import get
 from sys import argv
 
 
-def gather():
-    """
-    This methos return the tasks of the users
-    """
+def api_todo():
+    """Data struct"""
+    employee_id = int(argv[1])
+    employee_name = ""
+    number_of_task = 0
+    number_of_done_task = 0
+    titles_of_task = []
+    user_url = get("https://jsonplaceholder.typicode.com/users").json()
+    task_url = get("https://jsonplaceholder.typicode.com/todos").json()
 
-    url_all = "https://jsonplaceholder.typicode.com/todos?"
-    url_user = "https://jsonplaceholder.typicode.com/users?"
-    argv_all = {'userId': argv[1]}
-    argv_user = {'id': argv[1]}
+    for user in user_url:
+        if user['id'] == employee_id:
+            employee_name = user['name']
 
-    response_all = requests.get(url_all, params=argv_all)
-    response_user = requests.get(url_user, params=argv_user)
+    for task in task_url:
+        if task['userId'] == employee_id:
+            if task['completed']:
+                titles_of_task.append(task['title'])
+                number_of_done_task += 1
+            number_of_task += 1
 
-    all_json = response_all.json()
-    user_json = response_user.json()
-    comp, task = 0, 0
-    list_task = []
+    print("Employee {} is done with tasks({}/{}):".format(employee_name,
+                                                          number_of_done_task,
+                                                          number_of_task))
 
-    for dates in all_json:
-        task += 1
-        if dates['completed']:
-            comp += 1
-            list_task.append(dates['title'])
-
-    name = user_json[0]['name']
-    print("Employee {} is done with tasks({}/{}):".format(name, comp, task))
-    for task in list_task:
-        print("\t " + task)
+    for title in titles_of_task:
+        print("\t {}".format(title))
 
 
-if __name__ == '__main__':
-    gather()
+if __name__ == "__main__":
+    api_todo()
