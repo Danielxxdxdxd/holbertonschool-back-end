@@ -1,42 +1,37 @@
-#/!usr/bin/python3
-"""
-This module start the conecction with API jsonplace
-"""
-import requests
-from sys import argv
+#!/usr/bin/python3
+"""CSV EXPORT"""
+
 import csv
+from sys import argv
+from requests import get
 
 
-def gather():
-    """
-    This methos return the tasks of the users
-    """
+def csv_export():
+    """csv export"""
 
-    url_all = "https://jsonplaceholder.typicode.com/todos?"
-    url_user = "https://jsonplaceholder.typicode.com/users?"
-    argv_all = {'userId': argv[1]}
-    argv_user = {'id': argv[1]}
+    url_base = "https://jsonplaceholder.typicode.com/"
 
-    response_all = requests.get(url_all, params=argv_all)
-    response_user = requests.get(url_user, params=argv_user)
+    user = "{}users/{}".format(url_base, argv[1])
+    res = get(user)
+    json_user = res.json()
+    username = json_user.get("username")
 
-    all_json = response_all.json()
-    user_json = response_user.json()
+    todos = "{}todos?userId={}".format(url_base, argv[1])
+    res = get(todos)
+    json_task = res.json()
+    done_task = []
 
-    name = user_json[0]['username']
-    id = user_json[0]['id']
-    list_date = []
-    
-    for date in all_json:
-        dates = f'{id},{name},{date["completed"]},{date["title"]}'
-        list_date.append(dates)
-    for date in list_date:
-        print(date)
-    
-    with open('2.csv', 'w', encoding='UTF8') as file:
-        writer = csv.writer(file)
-        
-        writer.writerow(list_date)
+    for todo in json_task:
+        done_task.append(
+            [argv[1], username, todo.get("completed"), todo.get("title")])
 
-if __name__ == '__main__':
-    gather()
+    csv_file = argv[1] + ".csv"
+    with open(csv_file, mode="w", encoding="utf-8") as f:
+        writer = csv.writer(f, delimiter=',', quotechar='"',
+                            quoting=csv.QUOTE_ALL)
+        for task in done_task:
+            writer.writerow(task)
+
+
+if __name__ == "__main__":
+    csv_export()
