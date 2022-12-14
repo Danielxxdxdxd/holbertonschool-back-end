@@ -1,31 +1,42 @@
 #!/usr/bin/python3
-"""serialization json"""
+"""
+This module start the conecction with API jsonplace
+"""
 import json
-from requests import get
+import requests
 
 
-def dld():
-    """export json"""
+def gather():
+    """
+    This methos creted the dictionary of list of dictionaries of users
+    """
 
-    base_url = "https://jsonplaceholder.typicode.com"
-    employee = get('{}/users'.format(base_url))
-    user_list = employee.json()
-    task_list = []
+    url_all = "https://jsonplaceholder.typicode.com/todos?"
+    url_user = "https://jsonplaceholder.typicode.com/users?"
 
-    for user in user_list:
-        tasks = get('{}/todos?userId={}'.format(base_url, user.get("id")))
-        task_list += tasks.json()
+    response_all = requests.get(url_all)
+    response_user = requests.get(url_user)
 
-    json_dict = {user.get("id"): [{"task": task.get('title'),
-                                   "completed": task.get('completed'),
-                                   "username": user.get('username')}
-                                  for task in task_list
-                                  if user.get('id') == task.get("userId")]
-                 for user in user_list}
+    all_json = response_all.json()
+    user_json = response_user.json()
 
-    with open('todo_all_employees.json', 'w') as fp:
-        json.dump(json_dict, fp)
+    all_dict = {}
+    for user in user_json:
+        list_date = []
+        for dates in all_json:
+            if user['id'] == dates['userId']:
+                info_dict = {}
+                info_dict['username'] = user['username']
+                info_dict['task'] = dates['title']
+                info_dict['completed'] = dates['completed']
+                list_date.append(info_dict)
+        all_dict[user['id']] = list_date
+
+    JSON_file = json.dumps(all_dict)
+
+    with open('todo_all_employees.json', 'w') as file:
+        file.write(JSON_file)
 
 
-if __name__ == "__main__":
-    dld()
+if __name__ == '__main__':
+    gather()
