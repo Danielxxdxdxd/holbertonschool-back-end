@@ -1,30 +1,45 @@
 #!/usr/bin/python3
-"""serialization json"""
+"""
+This module start the conecction with API jsonplace
+"""
 import json
+import requests
 from sys import argv
-from requests import get
 
 
-def json_export():
-    """export json"""
+def gather():
+    """
+    This methos return the tasks of the users in json file
+    """
 
-    base_url = "https://jsonplaceholder.typicode.com"
-    user_id = argv[1]
+    url_all = "https://jsonplaceholder.typicode.com/todos?"
+    url_user = "https://jsonplaceholder.typicode.com/users?"
+    argv_all = {'userId': argv[1]}
+    argv_user = {'id': argv[1]}
 
-    employee = get('{}/users/{}'.format(base_url, user_id))
-    username = employee.json().get('username')
+    response_all = requests.get(url_all, params=argv_all)
+    response_user = requests.get(url_user, params=argv_user)
 
-    tasks = get('{}/todos?userId={}'.format(base_url, user_id))
-    task_list = tasks.json()
+    all_json = response_all.json()
+    user_json = response_user.json()
 
-    json_dict = {user_id: [{"task": task.get('title'),
-                            "completed": task.get('completed'),
-                            "username": username}
-                           for task in task_list]}
+    name = user_json[0]['username']
 
-    with open('{}.json'.format(user_id), 'w') as fp:
-        json.dump(json_dict, fp)
+    all_dict = {}
+    list_date = []
+    for date in all_json:
+        info_dict = {}
+        info_dict['task'] = date['title']
+        info_dict['completed'] = date['completed']
+        info_dict['username'] = name
+        list_date.append(info_dict)
+    all_dict[argv[1]] = list_date
+
+    JSON_date = json.dumps(all_dict)
+
+    with open('{}.json'.format(argv[1]), 'w') as file:
+        file.write(JSON_date)
 
 
-if __name__ == "__main__":
-    json_export()
+if __name__ == '__main__':
+    gather()
